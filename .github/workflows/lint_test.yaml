@@ -37,7 +37,7 @@ jobs:
       - name: Format with black
         run: |
           pip install black
-          black app
+          black .
 
       - name: Test with pytest
         run: |

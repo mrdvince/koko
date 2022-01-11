@@ -1,1 +1,1 @@
-# Deployment Using Terraform, Ansible & Docker
+# Docker image deployment, using ansible
