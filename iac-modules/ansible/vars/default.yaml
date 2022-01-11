@@ -1,0 +1,4 @@
+---
+create_containers: 1
+default_container_name: koko
+default_container_image: eggroll/koko:latest

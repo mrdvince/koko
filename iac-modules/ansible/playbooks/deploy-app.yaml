@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: true
+  vars_files:
+    - ../vars/default.yaml
+
+  tasks:
+    - name: Pull default Docker image
+      command: sh -c "docker pull {{ default_container_image }}"
+
+    # Creates containers
+    - name: Run container
+      command: sh -c "docker run -d -p 80:8080 --name {{ default_container_name }} {{ default_container_image }}"
+      loop:
+        - create_containers
