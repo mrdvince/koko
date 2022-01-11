@@ -1,6 +1,6 @@
 # Instance security group
 resource "aws_security_group" "koko_instance_security_group" {
-  name        = "koko_instance_security_group"
+  name        = "koko-instance-security-group"
   description = "Allow HTTP, HTTPS and SSH traffic"
 
   ingress {
@@ -46,7 +46,7 @@ resource "aws_security_group" "koko_instance_security_group" {
 
 # ELB securtiy group
 resource "aws_security_group" "koko_elb_security_group" {
-  name        = "koko_elb_security_group"
+  name        = "koko-elb-security-group"
   description = "Security group for ELB"
   egress {
     from_port   = 0

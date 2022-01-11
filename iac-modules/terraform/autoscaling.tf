@@ -45,14 +45,16 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   force_delete         = true
   tag {
     key                 = "Name"
-    value               = "custom_koko_instance"
+    value               = "koko_instance"
     propagate_at_launch = true
   }
 }
+# autoscale attachment 
 resource "aws_autoscaling_attachment" "asg_attachment_bar" {
   autoscaling_group_name = aws_autoscaling_group.autoscaling_group.id
   elb                    = aws_elb.koko_elb.id
 }
+
 # autoscaling policy
 resource "aws_autoscaling_policy" "scale_up" {
   name                   = "scale-up"

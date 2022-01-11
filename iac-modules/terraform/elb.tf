@@ -3,7 +3,7 @@
 resource "aws_elb" "koko_elb" {
   name               = "koko-elb"
   availability_zones = ["us-east-2a", "us-east-2b", "us-east-2c"]
-  security_groups    = [aws_security_group.koko_instance_security_group.id, aws_security_group.koko_elb_security_group.id]
+  security_groups    = [aws_security_group.koko_elb_security_group.id]
 
   listener {
     instance_port     = 80
