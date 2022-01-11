@@ -143,3 +143,9 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+*.auto.tfvars
+keys/
+.terraform
+*.tfstate
+*.tfstate.backup
+*.terraform.*
