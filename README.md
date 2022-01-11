@@ -2,6 +2,17 @@
 
 Using terraform to provision AWS resources, and deploy a simple flask app using ansible.
 
+# TOC
+
+- [Docker image deployment, using ansible](#docker-image-deployment--using-ansible)
+- [Getting started](#getting-started)
+- [Dependencies](#dependencies)
+- [Docker image](#docker-image)
+- [AWS resource provisioning](#aws-resource-provisioning)
+- [Ansible](#ansible)
+- [Jenkins](#jenkins)
+- [Jenkins & Ansible](#jenkins---ansible)
+
 # Getting started
 
 The project is broken down into:
@@ -118,4 +129,42 @@ ansible-playbook playbooks/deploy_app.yaml
 
 > visit the load balancer's dns name, should have been printed to the screen when terraform finished running, alternatively this can be found on the console.
 
-5. Jenkins
+# Jenkins
+
+1. Fetch the war file from jenkins website and run it
+
+```bash
+java -jar jenkins.war
+```
+
+Visit `http://localhost:8080/` and go through the initial setup guide, which entails creating a new user etc.
+
+2. Install docker plugins
+
+In order to be able to build the containers and push them to the registry a few extra set up steps are required.
+
+Head over to `Manage Jenkins` then `Manage Plugins` under `available` search for docker and install
+
+- Docker plugin
+- Docker Pipeline
+- CloudBees Docker Build and Publish plugin
+
+this will add more options to the build steps in the project
+
+3. New Item
+
+- Go back to the dashboard and create a `New Item` and select `Freestyle project`
+- Add a description of your choice (what the project is about)
+- Select Github project option and provide the project url
+- Under `Source Code Management` select git and provide the git url, (if it's a private github project credentials are also required)
+- Next add a build step and select `Docker build and Publish` and fill the fields, docker hub credentials are also needed if using docker hub, if the fields are left empty the defaults are used. Attached screenshot.
+
+![jenkins](screenshots/jenkins.png)
+
+- finally apply, save and build.
+
+> Build Triggers can also be setup based on once's choice. I went with `Poll SCM` every minute `* * * * *`
+
+# Jenkins & Ansible
+
+WIP
