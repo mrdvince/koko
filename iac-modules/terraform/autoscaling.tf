@@ -23,19 +23,24 @@ data "aws_ami" "ubuntu" {
 
 # autoscale launch configuration
 resource "aws_launch_configuration" "launch_configuration" {
-  name          = "autoscaling-launch-configuration"
-  image_id      = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.ubuntu.key_name
+  name            = "autoscaling-launch-configuration"
+  image_id        = data.aws_ami.ubuntu.id
+  instance_type   = "t2.micro"
+  key_name        = aws_key_pair.ubuntu.key_name
+  security_groups = [aws_security_group.koko_instance_security_group.id]
+  user_data       = "#!/bin/bash\napt-get update" 
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # autoscale group
 resource "aws_autoscaling_group" "autoscaling_group" {
+  name                 = "autoscaling-group"
   availability_zones   = data.aws_availability_zones.available.names
   desired_capacity     = 2
   max_size             = 3
   min_size             = 2
-  name                 = "autoscaling-group"
   launch_configuration = aws_launch_configuration.launch_configuration.name
   force_delete         = true
   tag {
@@ -44,10 +49,13 @@ resource "aws_autoscaling_group" "autoscaling_group" {
     propagate_at_launch = true
   }
 }
-
+resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+  autoscaling_group_name = aws_autoscaling_group.autoscaling_group.id
+  elb                    = aws_elb.koko_elb.id
+}
 # autoscaling policy
 resource "aws_autoscaling_policy" "scale_up" {
-  name                   = "scale_up"
+  name                   = "scale-up"
   adjustment_type        = "ChangeInCapacity"
   scaling_adjustment     = 1
   autoscaling_group_name = aws_autoscaling_group.autoscaling_group.name
@@ -57,17 +65,17 @@ resource "aws_autoscaling_policy" "scale_up" {
 
 # cloudwatch monitor
 resource "aws_cloudwatch_metric_alarm" "alarm" {
-  alarm_name                  = "scale_up_on_cpu_utilization"
-  comparison_operator         = "GreaterThanOrEqualToThreshold"
-  evaluation_periods          = 2
-  metric_name                 = "CPUUtilization"
-  namespace                  = "AWS/EC2"
-  period                     = 120
-  statistic                   = "Average"
-  threshold                  = 20.0
-  alarm_description           = "scale up on cpu utilization"
-  insufficient_data_actions   = []
-  ok_actions                  = []
+  alarm_name                = "scale-up-on-cpu-utilization"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = 2
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = 120
+  statistic                 = "Average"
+  threshold                 = 20.0
+  alarm_description         = "scale up on cpu utilization"
+  insufficient_data_actions = []
+  ok_actions                = []
 
   dimensions = {
     name  = "AutoScalingGroupName"
@@ -75,12 +83,12 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   }
 
   actions_enabled = true
-  alarm_actions = [aws_autoscaling_policy.scale_up.arn]
+  alarm_actions   = [aws_autoscaling_policy.scale_up.arn]
 }
 
 # define auto descaling policy
 resource "aws_autoscaling_policy" "scale_down" {
-  name                   = "scale_down"
+  name                   = "scale-down"
   adjustment_type        = "ChangeInCapacity"
   scaling_adjustment     = -1
   autoscaling_group_name = aws_autoscaling_group.autoscaling_group.name
@@ -90,17 +98,17 @@ resource "aws_autoscaling_policy" "scale_down" {
 
 # descale cloudwatch
 resource "aws_cloudwatch_metric_alarm" "scale_down_on_cpu_utilization" {
-  alarm_name                  = "scale_down_on_cpu_utilization"
-  comparison_operator         = "LessThanOrEqualToThreshold"
-  evaluation_periods          = 2
-  metric_name                 = "CPUUtilization"
-  namespace                  = "AWS/EC2"
-  period                     = 120
-  statistic                   = "Average"
-  threshold                  = 10.0
-  alarm_description           = "scale down on cpu utilization"
-  insufficient_data_actions   = []
-  ok_actions                  = []
+  alarm_name                = "scale-down-on-cpu-utilization"
+  comparison_operator       = "LessThanOrEqualToThreshold"
+  evaluation_periods        = 2
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = 120
+  statistic                 = "Average"
+  threshold                 = 10.0
+  alarm_description         = "scale down on cpu utilization"
+  insufficient_data_actions = []
+  ok_actions                = []
 
   dimensions = {
     name  = "AutoScalingGroupName"
@@ -108,5 +116,9 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_on_cpu_utilization" {
   }
 
   actions_enabled = true
-  alarm_actions = [aws_autoscaling_policy.scale_down.arn]
+  alarm_actions   = [aws_autoscaling_policy.scale_down.arn]
+}
+
+output "elb" {
+  value = aws_elb.koko_elb.dns_name
 }

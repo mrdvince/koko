@@ -10,6 +10,6 @@ RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
 COPY . /app/
 ENV PYTHONPATH=/app
 
-RUN gunicorn --bind 0.0.0.0:8000 src.wsgi:app
+RUN gunicorn --bind 0.0.0.0:80 src.wsgi:app
 
-EXPOSE 8000
+EXPOSE 80
